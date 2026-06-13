@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Monitoramento </title>
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml,
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="14" fill="%231e3a8a"/>
+    <path d="M30 8a8 8 0 0 1 16 0v28a16 16 0 1 1-16 0z" fill="none" stroke="%23dbeafe" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="38" cy="48" r="6" fill="%23dbeafe"/>
+    </svg>'>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --azul-escuro: #0f172a;
+      --azul-card: #1e3a8a;
+      --azul-medio: #2563eb;
+      --azul-claro: #dbeafe;
+      --azul-fundo: #eff6ff;
+      --texto: #0f172a;
+      --branco: #ffffff;
+      --verde: #16a34a;
+      --amarelo: #f59e0b;
+      --vermelho: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+    margin: 0;
+    background: linear-gradient(
+        135deg,
+        var(--azul-fundo),
+        #ffffff
+    );
+    color: var(--texto);
+    }
+
+    body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.12;
+    background-image:
+        radial-gradient(
+        circle at 20% 30%,
+        rgba(37,99,235,.30) 0 2px,
+        transparent 3px
+        ),
+        radial-gradient(
+        circle at 80% 70%,
+        rgba(37,99,235,.20) 0 2px,
+        transparent 3px
+        ),
+        linear-gradient(
+        135deg,
+        transparent 0 48%,
+        rgba(37,99,235,.12) 49%,
+        transparent 51%
+        );
+
+    background-size:
+        80px 80px,
+        110px 110px,
+        36px 36px;
+
+    z-index: -1;
+}
+
+    header {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(120deg, #0f172a, #1e3a8a, #2563eb);
+        color: white;
+        padding: 20px 24px;
+        text-align: center;
+    }
+
+        .header-bg {
+        position: absolute;
+        inset: 0;
+        opacity: 0.22;
+        background-image:
+            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.28) 0 2px, transparent 3px),
+            radial-gradient(circle at 80% 70%, rgba(255,255,255,0.22) 0 2px, transparent 3px),
+            linear-gradient(135deg, transparent 0 48%, rgba(255,255,255,0.18) 49%, transparent 51%);
+        background-size: 80px 80px, 110px 110px, 36px 36px;
+        }
+
+        .header-content {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        }
+
+        .header-text {
+        flex: 1;
+        }
+
+        header h1 {
+        margin: 0;
+        font-size: 30px;
+        letter-spacing: 0.3px;
+        }
+
+        header p {
+        margin: 8px 0 0;
+        opacity: 0.9;
+        }
+
+        .header-svg {
+        width: 90px;
+        height: 90px;
+        border-radius: 70px;
+        background: rgba(255,255,255,0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+        }
+
+        .header-svg svg {
+        width: 55px;
+        height: 55px;
+        fill: none;
+        stroke: #dbeafe;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        }
+
+        .header-svg:first-child svg {
+        animation: signalBlink 2.5s infinite ease-in-out;
+        }
+
+        @keyframes signalBlink {
+        0% {
+            opacity: 0.45;
+            stroke: #dbeafe;
+        }
+        50% {
+            opacity: 1;
+            stroke: #ffffff;
+        }
+        100% {
+            opacity: 0.45;
+            stroke: #dbeafe;
+        }
+        }
+
+        .header-svg:last-child {
+        animation: glowTemp 4s infinite ease-in-out;
+        }
+
+        @keyframes glowTemp {
+        0% {
+            filter: brightness(1);
+        }
+
+        50% {
+            filter: brightness(1.35);
+        }
+
+        100% {
+            filter: brightness(1);
+        }
+        }
+
+        @media (max-width: 700px) {
+        .header-content {
+            gap: 12px;
+        }
+
+        .header-svg {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+        }
+
+        .header-svg svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        header h1 {
+            font-size: 21px;
+        }
+
+        header p {
+            font-size: 13px;
+        }
+        }
+
+    main {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--branco);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      border-left: 6px solid var(--azul-medio);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #475569;
+    }
+
+    .valor {
+      font-size: 30px;
+      font-weight: bold;
+      color: var(--azul-card);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .normal {
+      background: #dcfce7;
+      color: var(--verde);
+    }
+
+    .atencao {
+      background: #fef3c7;
+      color: var(--amarelo);
+    }
+
+    .alarme {
+      background: #fee2e2;
+      color: var(--vermelho);
+    }
+
+    .grid-graficos {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .grafico {
+    background: var(--branco);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    height: 380px;
+    position: relative;
+    }
+
+    .grafico canvas {
+    width: 100% !important;
+    height: 300px !important;
+    }
+
+    .grafico h2 {
+      margin: 0 0 16px;
+      font-size: 20px;
+      color: var(--azul-escuro);
+      text-align: center;
+    }
+
+    .tabela {
+      margin-top: 20px;
+      background: var(--branco);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: var(--azul-card);
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    footer {
+    position: relative;
+    overflow: hidden;
+    margin-top: 40px;
+    padding: 24px;
+    text-align: left;
+    color: white;
+    background:
+        linear-gradient(
+        120deg,
+        #0f172a,
+        #1e3a8a,
+        #2563eb
+        );
+    }
+
+    footer span {
+    position: relative;
+    z-index: 1;
+    }
+
+    footer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.22;
+    background-image:
+        radial-gradient(
+        circle at 20% 30%,
+        rgba(255,255,255,.28) 0 2px,
+        transparent 3px
+        ),
+        radial-gradient(
+        circle at 80% 70%,
+        rgba(255,255,255,.22) 0 2px,
+        transparent 3px
+        ),
+        linear-gradient(
+        135deg,
+        transparent 0 48%,
+        rgba(255,255,255,.18) 49%,
+        transparent 51%
+        );
+
+    background-size:
+        80px 80px,
+        110px 110px,
+        36px 36px;
+    }
+
+    .linha-atencao {
+      background: #eff7fb;
+    }
+
+    .linha-alarme {
+      background: #eff7fb;
+    }
+
+
+    @media (min-width: 900px) {
+      .grid-graficos {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .tendencia-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        }
+
+        .trend-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        }
+
+        .trend-icon svg {
+        width: 28px;
+        height: 28px;
+        fill: none;
+        stroke: var(--azul-card);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        }
+
+        .trend-up svg {
+        stroke: var(--amarelo);
+        }
+
+        .trend-up-fast svg {
+        stroke: var(--vermelho);
+        }
+
+        .trend-stable svg {
+        stroke: var(--verde);
+        }
+
+        .trend-down svg {
+        stroke: var(--amarelo);
+        }
+
+        .trend-down-fast svg {
+        stroke: var(--vermelho);
+        }
+
+    .filtro-tempo{
+        width:100%;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        gap:24px;
+        margin:30px auto 40px auto;
+    }
+
+    .filtro-tempo select{
+        padding:8px 12px;
+        border-radius:10px;
+        border:1px solid #dbeafe;
+    }
+
+    .filtro-tempo .card{
+        width:auto;
+        min-width:260px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+    }
+
+    .status-normal{
+        color: inherit;
+        font-weight: normal;
+    }
+
+    .status-atencao{
+        color: #d97706;
+        font-weight: bold;
+    }
+
+    .status-alarme{
+        color: #dc2626;
+        font-weight: bold;
+    }
+
+
+  </style>
+</head>
+
+<body>
+  <header>
+  <div class="header-bg"></div>
+
+  <div class="header-content">
+    <div class="header-svg">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="5"></circle>
+        <path d="M22 32a10 10 0 0 1 20 0"></path>
+        <path d="M14 32a18 18 0 0 1 36 0"></path>
+        <path d="M6 32a26 26 0 0 1 52 0"></path>
+        <line x1="32" y1="37" x2="32" y2="54"></line>
+      </svg>
+    </div>
+
+    <div class="header-text">
+      <h1>Dashboard para Monitoramento de Ambientes</h1>
+    </div>
+
+    <div class="header-svg">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M28 8a8 8 0 0 1 16 0v28a16 16 0 1 1-16 0z"></path>
+        <line x1="36" y1="14" x2="36" y2="38"></line>
+        <circle cx="36" cy="48" r="6"></circle>
+        <path d="M12 18c6-5 12-5 18 0"></path>
+        <path d="M10 30c6-5 12-5 18 0"></path>
+      </svg>
+    </div>
+
+  </div>
+  </header>
+
+  <main>
+    <section class="cards">
+      <div class="card">
+        <h3>Temperatura Atual</h3>
+        <div class="valor" id="tempAtual">-- °C</div>
+      </div>
+
+      <div class="card">
+        <h3>Status - Temperatura</h3>
+        <span class="valor" id="statusTemp">--</span>
+      </div>
+
+      <div class="card">
+        <h3>Umidade Atual</h3>
+        <div class="valor" id="umidAtual">-- %</div>
+      </div>
+
+      <div class="card">
+        <h3>Status - Umidade</h3>
+        <span class="valor" id="statusUmid">--</span>
+      </div>
+    </section>
+
+    <section class="cards">
+        <div class="card">
+        <h3>Tendência - Temperatura</h3>
+        <div class="tendencia-box">
+            <div class="trend-icon" id="iconeTendenciaTemp"></div>
+            <span class="badge normal" id="tendenciaTemp">--</span>
+        </div>
+        </div>
+
+        <div class="card">
+        <h3>Tendência - Umidade</h3>
+        <div class="tendencia-box">
+            <div class="trend-icon" id="iconeTendenciaUmid"></div>
+            <span class="badge normal" id="tendenciaUmid">--</span>
+        </div>
+        </div>
+    </section>
+
+    <section class="grid-graficos">
+
+        <div class="grafico">
+        <h2>OCORRÊNCIAS - TEMPERATURA</h2>
+        <canvas id="graficoLeituras"></canvas>
+      </div>
+
+      <div class="grafico">
+        <h2>OCORRÊNCIAS - UMIDADE</h2>
+        <canvas id="graficoStatus"></canvas>
+      </div>
+    </section>
+
+    <section class="filtro-tempo">
+
+        <div class="card">
+            <label><h3>Período:</h3></label>
+
+            <select id="tipoAgrupamento">
+                <option value="minuto">Minuto</option>
+                <option value="hora">Hora</option>
+                <option value="dia">Dia</option>
+                <option value="mes">Mês</option>    
+            </select>
+        </div>
+
+        <div class="card">
+            <label><h3>Quantidade:</h3></label>
+
+            <select id="qtdPeriodos">
+                <option value="5">5 Últimos</option>
+                <option value="10" selected>10 Últimos</option>
+                <option value="20">20 Últimos</option>
+                <option value="50">50 Últimos</option>
+            </select>
+        </div>
+
+    </section>
+
+    <section class="tabela">
+      <h2>Histórico de Ocorrências</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Período</th>
+            <th>Temperatura</th>
+            <th>Umidade </th>
+            <th>Status - Temperatura</th>
+            <th>Status - Umidade</th>
+            <th>Tendência Temperatura</th>
+            <th>Tendência Umidade</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaOcorrencias"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <span>
+      Developed by: Lucas Bonfim Dantas | Luiz Augusto Cândido da Silva | Thiago da Silva Kondrusik | Versão: v2.0.1 
+      <br>Último dado recebido: <span id="ultimoDado">--</span> |
+      Status: <span id="statusAtualizacao">Aguardando...</span>
+    </span>
+  </footer>
+
+  <script>
+    const CHANNEL_ID = "3400475";
+    const URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=800`;
+
+    let graficoLeituras;
+    let graficoStatus;
+
+    function textoStatus(valor) {
+      valor = Number(valor);
+      if (valor === 0) return "NORMAL";
+      if (valor === 1) return "ATENÇÃO";
+      if (valor === 2) return "ALARME";
+      return "--";
+    }
+
+    function classeStatus(valor) {
+      valor = Number(valor);
+      if (valor === 0) return "badge normal";
+      if (valor === 1) return "badge atencao";
+      if (valor === 2) return "badge alarme";
+      return "badge normal";
+    }
+
+    function textoTendencia(valor){
+        valor = Number(valor);
+        switch(valor){
+            case 2:
+                return "SUBINDO RÁPIDO";
+            case 1:
+                return "SUBINDO";
+            case 0:
+                return "ESTÁVEL";
+            case -1:
+                return "DIMINUINDO";
+            case -2:
+                return "DIMINUINDO RÁPIDO";
+            default:
+                return "--";
+        }
+    }
+
+    function classeTendencia(valor){
+        
+        valor = Number(valor);
+
+        if(valor == 2)
+            return "badge alarme";
+        if(valor == 1)
+            return "badge atencao";
+        if(valor == 0)
+            return "badge normal";
+        if(valor == -1)
+            return "badge atencao";
+        if(valor == -2)
+            return "badge alarme";
+        return "badge normal";
+    }
+
+    function atualizarTendencia(id, valor){
+        const elemento = document.getElementById(id);
+        elemento.innerText = textoTendencia(valor);
+        elemento.className = classeTendencia(valor);
+    }
+    function atualizarIconeTendencia(id, valor) {
+        const elemento = document.getElementById(id);
+        valor = Number(valor);
+
+        let classe = "trend-stable";
+        let svg = "";
+
+        if (valor === 2) {
+            classe = "trend-up-fast";
+            svg = `
+            <svg viewBox="0 0 64 64">
+                <polyline points="8,48 22,34 34,40 54,16"></polyline>
+                <polyline points="42,16 54,16 54,28"></polyline>
+                <line x1="8" y1="56" x2="56" y2="56"></line>
+            </svg>
+            `;
+        }
+
+        else if (valor === 1) {
+            classe = "trend-up";
+            svg = `
+            <svg viewBox="0 0 64 64">
+                <polyline points="10,46 24,34 36,38 52,22"></polyline>
+                <polyline points="42,22 52,22 52,32"></polyline>
+            </svg>
+            `;
+        }
+
+        else if (valor === 0) {
+            classe = "trend-stable";
+            svg = `
+            <svg viewBox="0 0 64 64">
+                <line x1="12" y1="32" x2="52" y2="32"></line>
+                <polyline points="44,24 52,32 44,40"></polyline>
+            </svg>
+            `;
+        }
+
+        else if (valor === -1) {
+            classe = "trend-down";
+            svg = `
+            <svg viewBox="0 0 64 64">
+                <polyline points="10,22 24,34 36,30 52,46"></polyline>
+                <polyline points="42,46 52,46 52,36"></polyline>
+            </svg>
+            `;
+        }
+
+        else if (valor === -2) {
+            classe = "trend-down-fast";
+            svg = `
+            <svg viewBox="0 0 64 64">
+                <polyline points="8,16 22,30 34,24 54,48"></polyline>
+                <polyline points="42,48 54,48 54,36"></polyline>
+                <line x1="8" y1="56" x2="56" y2="56"></line>
+            </svg>
+            `;
+        }
+
+        elemento.className = "trend-icon " + classe;
+        elemento.innerHTML = svg;
+        }
+
+    function formatarData(dataISO) {
+      const data = new Date(dataISO);
+      return data.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function formatarDataCompleta(dataISO) {
+      const data = new Date(dataISO);
+
+      return data.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+
+    function atualizarStatusOk(ultimo) {
+      document.getElementById("ultimoDado").innerText =
+        formatarDataCompleta(ultimo.created_at);
+
+      const agora = new Date();
+
+      document.getElementById("statusAtualizacao").innerText =
+        "Online - Atualizado às " + agora.toLocaleTimeString("pt-BR");
+
+      document.getElementById("statusAtualizacao").style.color = "#dcfce7";
+    }
+
+    function atualizarStatusErro() {
+      document.getElementById("statusAtualizacao").innerText =
+        "Falha ao buscar dados";
+
+      document.getElementById("statusAtualizacao").style.color = "#fecaca";
+    }
+
+    async function carregarDados() {
+      try {
+        const resposta = await fetch(URL);
+        const dados = await resposta.json();
+
+        const feeds = dados.feeds
+          .filter(f => f.field1 !== null && f.field2 !== null);
+
+        if (feeds.length === 0) return;
+
+        const ultimo = feeds[feeds.length - 1];
+
+        atualizarStatusOk(ultimo);
+        atualizarCards(ultimo);
+        atualizarGraficos(feeds);
+        atualizarTabela(feeds);
+
+      } catch (erro) {
+        console.error("Erro ao carregar dados:", erro);
+        atualizarStatusErro();
+      }
+    }
+
+    function atualizarCards(ultimo) {
+      document.getElementById("tempAtual").innerText =
+        `${Number(ultimo.field1).toFixed(1)} °C`;
+
+      document.getElementById("umidAtual").innerText =
+        `${Number(ultimo.field2).toFixed(1)} %`;
+
+      atualizarBadge("statusTemp", textoStatus(ultimo.field3), ultimo.field3);
+      atualizarBadge("statusUmid", textoStatus(ultimo.field4), ultimo.field4);
+      atualizarTendencia("tendenciaTemp",ultimo.field5);
+      atualizarTendencia("tendenciaUmid",ultimo.field6);
+      atualizarIconeTendencia("iconeTendenciaTemp", ultimo.field5);
+      atualizarIconeTendencia("iconeTendenciaUmid", ultimo.field6);
+        
+    }
+
+    function atualizarBadge(id, texto, valor) {
+      const elemento = document.getElementById(id);
+      elemento.innerText = texto;
+      elemento.className = classeStatus(valor);
+    }
+
+    function atualizarGraficos(feeds) {
+    const bucketsTemp = {};
+    const bucketsUmid = {};
+
+    feeds.forEach(f => {
+        const tempo = obterBucket(f.created_at);
+
+        const statusTemp = Number(f.field3);
+        const statusUmid = Number(f.field4);
+
+        if (!bucketsTemp[tempo]) {
+        bucketsTemp[tempo] = {
+            atencao: 0,
+            alarme: 0
+        };
+        }
+
+        if (!bucketsUmid[tempo]) {
+        bucketsUmid[tempo] = {
+            atencao: 0,
+            alarme: 0
+        };
+        }
+
+        if (statusTemp === 1) bucketsTemp[tempo].atencao++;
+        if (statusTemp === 2) bucketsTemp[tempo].alarme++;
+
+        if (statusUmid === 1) bucketsUmid[tempo].atencao++;
+        if (statusUmid === 2) bucketsUmid[tempo].alarme++;
+    });
+
+    const qtdPeriodos = Number(document.getElementById("qtdPeriodos").value);
+
+    const labelsTemp = Object.keys(bucketsTemp).slice(-qtdPeriodos);
+    const labelsUmid = Object.keys(bucketsUmid).slice(-qtdPeriodos);
+
+    const tempAtencao = labelsTemp.map(t => bucketsTemp[t].atencao);
+    const tempAlarme = labelsTemp.map(t => bucketsTemp[t].alarme);
+
+    const umidAtencao = labelsUmid.map(t => bucketsUmid[t].atencao);
+    const umidAlarme = labelsUmid.map(t => bucketsUmid[t].alarme);
+
+    if (graficoLeituras) graficoLeituras.destroy();
+    if (graficoStatus) graficoStatus.destroy();
+
+    const opcoesGrafico = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+        legend: {
+            display: true,
+            labels: {
+            usePointStyle: false,
+            boxWidth: 25,
+            boxHeight: 1,
+            font: { size: 16 }
+            }
+        }
+        },
+        scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+            precision: 0,
+            stepSize: 1
+            }
+        }
+        }
+    };
+
+    graficoLeituras = new Chart(document.getElementById("graficoLeituras"), {
+        type: "line",
+        data: {
+        labels: labelsTemp,
+        datasets: [
+            {
+            label: "Atenção",
+            data: tempAtencao,
+            borderColor: "#f59e0b",
+            backgroundColor: "#f59e0b",
+            pointStyle: "line",
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6
+            },
+            {
+            label: "Alarme",
+            data: tempAlarme,
+            borderColor: "#dc2626",
+            backgroundColor: "#dc2626",
+            pointStyle: "line",
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6
+            }
+        ]
+        },
+        options: opcoesGrafico
+    });
+
+    graficoStatus = new Chart(document.getElementById("graficoStatus"), {
+        type: "line",
+        data: {
+        labels: labelsUmid,
+        datasets: [
+            {
+            label: "Atenção",
+            data: umidAtencao,
+            borderColor: "#f59e0b",
+            backgroundColor: "#f59e0b",
+            pointStyle: "line",
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6
+            },
+            {
+            label: "Alarme",
+            data: umidAlarme,
+            borderColor: "#dc2626",
+            backgroundColor: "#dc2626",
+            pointStyle: "line",
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6
+            }
+        ]
+        },
+        options: opcoesGrafico
+    });
+    }
+
+    function obterBucket(dataISO) {
+    const tipo = document.getElementById("tipoAgrupamento").value;
+    const data = new Date(dataISO);
+
+    const dia = String(data.getDate()).padStart(2, "0");
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const ano = data.getFullYear();
+
+    const hora = String(data.getHours()).padStart(2, "0");
+    const minuto = String(data.getMinutes()).padStart(2, "0");
+
+    if (tipo === "minuto") {
+        return `${dia}/${mes} ${hora}:${minuto}`;
+    }
+
+    if (tipo === "hora") {
+        return `${dia}/${mes} ${hora}:00`;
+    }
+
+    if (tipo === "dia") {
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    if (tipo === "mes") {
+        return `${mes}/${ano}`;
+    }
+
+    return `${dia}/${mes} ${hora}:${minuto}`;
+    }
+
+    function classeTextoStatus(valor) {
+    valor = Number(valor);
+
+    if (valor === 1) return "status-atencao";
+    if (valor === 2) return "status-alarme";
+
+    return "status-normal";
+    }
+
+    function classeTextoTendencia(valor) {
+    valor = Number(valor);
+
+    if (valor === 0) return "status-normal";
+    if (valor === 1 || valor === -1) return "status-atencao";
+    if (valor === 2 || valor === -2) return "status-alarme";
+
+    return "status-normal";
+    }
+
+    function atualizarTabela(feeds) {
+      const tabela = document.getElementById("tabelaOcorrencias");
+      tabela.innerHTML = "";
+
+      const qtdPeriodos = Number(document.getElementById("qtdPeriodos").value);
+
+      const bucketsComOcorrencia = [];
+
+      feeds.forEach(f => {
+        const statusTemp = Number(f.field3);
+        const statusUmid = Number(f.field4);
+
+        if (statusTemp > 0 || statusUmid > 0) {
+          const bucket = obterBucket(f.created_at);
+
+          if (!bucketsComOcorrencia.includes(bucket)) {
+            bucketsComOcorrencia.push(bucket);
+          }
+        }
+      });
+
+      const ultimosBuckets = bucketsComOcorrencia.slice(-qtdPeriodos);
+
+      const ocorrencias = feeds
+        .filter(f => {
+          const statusTemp = Number(f.field3);
+          const statusUmid = Number(f.field4);
+          const bucket = obterBucket(f.created_at);
+
+          return (
+            (statusTemp > 0 || statusUmid > 0) &&
+            ultimosBuckets.includes(bucket)
+          );
+        })
+        .slice(-qtdPeriodos)
+        .reverse();
+
+      if (ocorrencias.length === 0) {
+        tabela.innerHTML = `
+          <tr>
+            <td colspan="7">Nenhuma ocorrência nos últimos registros.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      ocorrencias.forEach(f => {
+        const linha = document.createElement("tr");
+
+        const statusTemp = Number(f.field3);
+        const statusUmid = Number(f.field4);
+
+        if (statusTemp === 2 || statusUmid === 2) {
+          linha.classList.add("linha-alarme");
+        } else if (statusTemp === 1 || statusUmid === 1) {
+          linha.classList.add("linha-atencao");
+        }
+
+        linha.innerHTML = `
+          <td>${obterBucket(f.created_at)}</td>
+
+          <td class="${classeTextoStatus(f.field3)}">
+            ${Number(f.field1).toFixed(1)} °C
+          </td>
+
+          <td class="${classeTextoStatus(f.field4)}">
+            ${Number(f.field2).toFixed(1)} %
+          </td>
+
+          <td class="${classeTextoStatus(f.field3)}">
+            ${textoStatus(f.field3)}
+          </td>
+
+          <td class="${classeTextoStatus(f.field4)}">
+            ${textoStatus(f.field4)}
+          </td>
+
+          <td class="${classeTextoTendencia(f.field5)}">
+            ${textoTendencia(f.field5)}
+          </td>
+
+          <td class="${classeTextoTendencia(f.field6)}">
+            ${textoTendencia(f.field6)}
+          </td>
+        `;
+
+        tabela.appendChild(linha);
+      });
+    }
+
+    document.getElementById("tipoAgrupamento").addEventListener("change",carregarDados);
+    document.getElementById("qtdPeriodos").addEventListener("change", carregarDados);
+
+    carregarDados();
+    setInterval(carregarDados, 16000);
+  </script>
+</body>
+</html>
