@@ -643,7 +643,6 @@
   <script>
     const CHANNEL_ID = "3400475";
     const URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=800`;
-    const URL_ULTIMO = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds/last.json`;
 
     let graficoLeituras;
     let graficoStatus;
@@ -809,25 +808,23 @@
       document.getElementById("statusAtualizacao").style.color = "#fecaca";
     }
 
-    async function carregarDados() {
+  async function carregarDados() {
   try {
-    const respostaUltimo = await fetch(URL_ULTIMO + "?_=" + Date.now());
-    const ultimo = await respostaUltimo.json();
-
     const respostaHistorico = await fetch(URL + "&_=" + Date.now());
     const dados = await respostaHistorico.json();
 
     const feeds = dados.feeds
       .filter(f => f.field1 !== null && f.field2 !== null)
-      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      .sort((a, b) => Number(a.entry_id) - Number(b.entry_id));
 
-    if (!ultimo || ultimo.field1 === null || ultimo.field2 === null) {
+    if (feeds.length === 0) {
       atualizarStatusErro();
       return;
     }
 
-    atualizarStatusOk(ultimo);
+    const ultimo = feeds[feeds.length - 1];
 
+    atualizarStatusOk(ultimo);
     atualizarCards(ultimo);
     atualizarGraficos(feeds);
     atualizarTabela(feeds);
@@ -837,7 +834,6 @@
     atualizarStatusErro();
   }
 }
-
     function atualizarCards(ultimo) {
       document.getElementById("tempAtual").innerText =
         `${Number(ultimo.field1).toFixed(1)} °C`;
