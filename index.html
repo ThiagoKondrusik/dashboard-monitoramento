@@ -812,7 +812,8 @@
         const dados = await resposta.json();
 
         const feeds = dados.feeds
-          .filter(f => f.field1 !== null && f.field2 !== null);
+        .filter(f => f.field1 !== null && f.field2 !== null)
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
         if (feeds.length === 0) return;
 
